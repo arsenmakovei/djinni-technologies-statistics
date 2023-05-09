@@ -1,5 +1,14 @@
+import string
+
+import nltk
 import scrapy
+from nltk import word_tokenize
+from nltk.corpus import stopwords
 from scrapy.http import Response
+
+
+nltk.download("stopwords")
+STOP_WORDS = set(stopwords.words("english"))
 
 
 class VacanciesSpider(scrapy.Spider):
@@ -39,7 +48,21 @@ class VacanciesSpider(scrapy.Spider):
                 response.css("p.text-muted").re_first(r"(\d+) відгук")
             ),
             "salary": response.css(".public-salary-item::text").get(),
-            "technologies": response.css(
-                ".job-additional-info--item:nth-child(2) span::text"
-            ).getall(),
+            "technologies": self.parse_technologies(response),
         }
+
+    def parse_technologies(self, response: Response):
+        vacancy_description = (
+            " ".join(response.css("div.profile-page-section::text").getall())
+            .strip()
+            .lower()
+        )
+        tokens = word_tokenize(vacancy_description)
+
+        return list(
+            set(
+                word
+                for word in tokens
+                if word not in STOP_WORDS and word not in string.punctuation
+            )
+        )
