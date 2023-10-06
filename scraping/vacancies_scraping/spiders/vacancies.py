@@ -18,7 +18,7 @@ class VacanciesSpider(scrapy.Spider):
 
     def parse(self, response: Response, **kwargs):
         for vacancy in response.css(".list-jobs__item"):
-            vacancy_url = vacancy.css("a.profile::attr(href)").get()
+            vacancy_url = vacancy.css("a.job-list-item__link::attr(href)").get()
             yield response.follow(
                 vacancy_url, callback=self.parse_vacancy_page
             )
@@ -53,7 +53,7 @@ class VacanciesSpider(scrapy.Spider):
 
     def parse_technologies(self, response: Response):
         vacancy_description = (
-            " ".join(response.css("div.profile-page-section::text").getall())
+            " ".join(response.css("div.mb-4::text").getall())
             .strip()
             .lower()
         )
